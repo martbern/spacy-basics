@@ -1,2 +1,4 @@
 danavis/
 .vscode/
+*.json
+.DS*

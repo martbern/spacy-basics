@@ -1,4 +1,4 @@
 danavis/
 .vscode/
 *.json
-.DS*
+.DS_store

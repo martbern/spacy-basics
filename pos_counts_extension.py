@@ -2,14 +2,7 @@ from typing import Counter, Generator
 from spacy.tokens import Doc
 import spacy
 import os
-
-def file_generator(dir: str) -> Generator[str, None, None]:
-    for filename in os.listdir(dir):
-        if "danavis" in filename:
-            filepath = os.path.join(dir, filename)
-
-            with open(filepath, "r") as f:
-                yield f.read()
+from utils import file_generator
 
 def get_pos_counts(doc: Doc) -> Counter:
     token_count = 0

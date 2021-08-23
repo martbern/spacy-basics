@@ -2,14 +2,7 @@ from typing import Counter, Generator
 import spacy
 import os
 import json
-
-def file_generator(dir: str) -> Generator[str, None, None]:
-    for filename in os.listdir(dir):
-        if "danavis" in filename:
-            filepath = os.path.join(dir, filename)
-
-            with open(filepath, "r") as f:
-                yield f.read()
+from utils import file_generator
 
 def main():
     nlp = spacy.load("da_core_news_sm", exclude=["parser", "ner", "lemmatizer", "textcat"]) # Disable unused elements in the pipeline

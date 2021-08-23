@@ -5,10 +5,7 @@ import os
 from utils import file_generator
 
 def get_pos_counts(doc: Doc) -> Counter:
-    token_count = 0
     pos_counts = Counter()
-
-    token_count += len(doc)
             
     for token in doc:
         pos_counts[token.tag_] += 1

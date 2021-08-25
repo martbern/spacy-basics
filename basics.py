@@ -1,53 +1,32 @@
+from typing import Counter, Generator
 import spacy
 import os
-
-#KCE: add output type hint
-def file_generator(dir: str):
-    for filename in sorted(os.listdir(dir)): # KCE: Why sort the dir?
-        if "danavis" in filename:
-            # KCE use os.path.join to deal with paths (to make it os independent)
-            filepath = os.path.join(dir, filename)
-
-            with open(filepath, "r") as f:
-                yield f.read()
+import json
+from utils import file_generator
 
 def main():
-    # might as well use the large model here as it just as fast (but better)
     nlp = spacy.load("da_core_news_sm", exclude=["parser", "ner", "lemmatizer", "textcat"]) # Disable unused elements in the pipeline
 
-    doc_number = 0
-
     token_count = 0
-    adverb_count = 0
-    pronoun_count = 0
+    pos_counts = Counter()
 
-    for doc in  nlp.pipe(file_generator(dir), batch_size=20, n_process=5):
-        if doc_number >= 100000:
+    for count, doc in  enumerate(nlp.pipe(file_generator(dir), batch_size=2, n_process=4)):
+        if count >= 10: # Arbitrary breakpoint for faster iteration in development
             break
 
-        doc_number += 1 # KCE: Use enumerate instead of counter
+        if count % 5 == 0:
+            print(f"Processing {count}")
 
-        # KCE: use modulo calc i only print every n
-        if doc_number % 1000:
-            # KCE: use formatted string or "," in print instead of wrapping in str
-            print(f"Processing {doc_number}")
-            print("Processing ", doc_number)
-
-        # KCE:alternative to token count
-        # token_count += len(doc)
+        token_count += len(doc)
             
         for token in doc:
-            token_count += 1
+            pos_counts[token.tag_] += 1 #Loving counters right here
 
-            # try to generalise this to all tags maybe look up counter
-            if token.tag_ == "ADV":
-                adverb_count += 1
-            elif token.tag_ == "PRON":
-                pronoun_count += 1
+    print(f"Adverbs: {pos_counts['ADV']}, {round(pos_counts['ADV']/token_count*100, 3)}% of all tokens")
+    print(f"Pronouns: {pos_counts['PRON']}, {round(pos_counts['PRON']/token_count*100, 3)}% of all tokens")
 
-    print("Adverbs: " + str(adverb_count) + ", " + str(round(adverb_count/token_count*100, 3)) + "% of all tokens")
-    print("Pronouns: " + str(pronoun_count) + ", " + str(round(pronoun_count/token_count*100, 3)) + "% of all tokens")
-    # try to write it to a JSON
+    with open("tag_counts.json", "w") as f:
+        json.dump(pos_counts, f)
 
 if __name__ == "__main__":
     dir = "./danavis"
